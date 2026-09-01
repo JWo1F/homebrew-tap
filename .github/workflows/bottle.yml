@@ -1,0 +1,124 @@
+# Build Homebrew bottles for a released icofon version.
+#
+# A bottle is a precompiled build, so `brew install` unpacks it instead of
+# compiling from source and pulling in the Rust toolchain. One is built per
+# macOS version and architecture; anything not covered falls back to a source
+# build, which still works.
+#
+# This lives in the tap, and the bottles are hosted on the tap's own releases,
+# so both the upload and the formula commit are same-repository writes that the
+# built-in GITHUB_TOKEN covers. There is no personal access token anywhere.
+#
+# Formula/icofon.rb must already point at the version being bottled.
+
+name: Bottle
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Released icofon version to bottle, without the leading v"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  FORMULA: jwo1f/tap/icofon
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Apple Silicon back to Sonoma, plus Intel. Homebrew falls back to a
+        # bottle from an older macOS of the same architecture, so these cover
+        # more than the four names suggest.
+        os: [macos-26, macos-15, macos-14, macos-15-intel]
+    steps:
+      - name: Tap
+        # A third-party tap has to be trusted before its formulae will load.
+        run: |
+          brew tap JWo1F/tap
+          brew trust JWo1F/tap
+
+      - name: Check the formula is at ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          have=$(brew info --json=v2 "$FORMULA" | python3 -c 'import json,sys; print(json.load(sys.stdin)["formulae"][0]["versions"]["stable"])')
+          if [ "$have" != "${{ inputs.version }}" ]; then
+            echo "::error::tap formula is at $have, not ${{ inputs.version }}. Update it first."
+            exit 1
+          fi
+
+      - name: Build the bottle
+        run: |
+          set -euo pipefail
+          brew install --build-bottle "$FORMULA"
+          brew bottle --json --no-rebuild \
+            --root-url="https://github.com/JWo1F/homebrew-tap/releases/download/icofon-${{ inputs.version }}" \
+            "$FORMULA"
+          # Homebrew writes `name--version` locally but downloads `name-version`.
+          for f in *--*.bottle.tar.gz; do mv "$f" "${f/--/-}"; done
+          ls -la ./*.bottle.*
+
+      - name: Run the formula's test against the build
+        run: brew test "$FORMULA"
+
+      - name: Check the bottle carries a working binary
+        run: |
+          set -euo pipefail
+          tar -xzf ./*.bottle.tar.gz
+          ./icofon/${{ inputs.version }}/bin/icofon --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bottle-${{ matrix.os }}
+          path: |
+            *.bottle.tar.gz
+            *.bottle.json
+          if-no-files-found: error
+
+  publish:
+    name: Publish
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: bottles
+          merge-multiple: true
+
+      - name: Attach the bottles to this tap's release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: icofon-${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          gh release view "$TAG" --repo "$repo" >/dev/null 2>&1 \
+            || gh release create "$TAG" --repo "$repo" \
+                 --title "icofon ${{ inputs.version }} bottles" \
+                 --notes "Precompiled builds of icofon ${{ inputs.version }}, poured by \`brew install jwo1f/tap/icofon\`."
+          gh release upload "$TAG" bottles/*.bottle.tar.gz --clobber --repo "$repo"
+
+      - name: Write the bottle block into the formula and push
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          brew tap JWo1F/tap
+          brew trust JWo1F/tap
+          brew bottle --merge --write --no-commit bottles/*.bottle.json
+
+          cd "$(brew --repository JWo1F/tap)"
+          git diff
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin \
+            "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          git commit -am "icofon ${{ inputs.version }}: bottles"
+          git push origin HEAD:main
