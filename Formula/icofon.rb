@@ -8,7 +8,10 @@ class Icofon < Formula
 
   bottle do
     root_url "https://github.com/JWo1F/icofon/releases/download/v0.2.0"
-    sha256 cellar: :any_skip_relocation, arm64_tahoe: "d2c9cdd31e28bfa3ed0311ec6f65357757d1bf1db1db5cd22adac793abe4c349"
+    sha256 cellar: :any_skip_relocation, arm64_tahoe:   "8983a4e8eda33bfe6d20adb2cc2550b65cdc29f9f86e735cfc9645c055aeebf8"
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "f400e6378ff04f096c654538fe551412c52fb8cc94fa85419ceb2ff17334da02"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "e17dfc0d922b7da8bf59f611b82b84d2c47a07215849d4ec9824411c93014609"
+    sha256 cellar: :any_skip_relocation, sequoia:       "adf26498f5760d2cd6ed7b471a7cd41eb14ad0b2b50d4751e0554fa1feff1a65"
   end
 
   depends_on "rust" => :build
