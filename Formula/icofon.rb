@@ -8,10 +8,10 @@ class Icofon < Formula
 
   bottle do
     root_url "https://github.com/JWo1F/icofon/releases/download/v0.2.0"
-    sha256 cellar: :any_skip_relocation, arm64_tahoe:   "8983a4e8eda33bfe6d20adb2cc2550b65cdc29f9f86e735cfc9645c055aeebf8"
-    sha256 cellar: :any_skip_relocation, arm64_sequoia: "f400e6378ff04f096c654538fe551412c52fb8cc94fa85419ceb2ff17334da02"
-    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "e17dfc0d922b7da8bf59f611b82b84d2c47a07215849d4ec9824411c93014609"
-    sha256 cellar: :any_skip_relocation, sequoia:       "adf26498f5760d2cd6ed7b471a7cd41eb14ad0b2b50d4751e0554fa1feff1a65"
+    sha256 cellar: :any_skip_relocation, arm64_tahoe:   "dc20cd6cd1467042f4ad9af0e16c847417a9390ea2bc545b828275b53a99471b"
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "13d621d66742de152bac4a008616a15107dbc38e426ac0b8ec04a5ff1febecc0"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "97baa844f82d6e90b9a1cc474d96d858ba18516ee05ff473d0c069bfba92aa3d"
+    sha256 cellar: :any_skip_relocation, sequoia:       "8175c0f11c3c39a64a89f4cc3411b79f98561f18900137cba67768c7a4977e07"
   end
 
   depends_on "rust" => :build
