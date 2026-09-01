@@ -1,18 +1,10 @@
 class Icofon < Formula
   desc "Build an icon font (WOFF2/WOFF/TTF + CSS) from a folder of SVG files"
   homepage "https://github.com/JWo1F/icofon"
-  url "https://github.com/JWo1F/icofon/archive/refs/tags/v0.3.0.tar.gz"
-  sha256 "d0a5c69c250134ca148a50a7f9e8cc39586e4ce8d07faac2074b7998aaccc3ca"
+  url "https://github.com/JWo1F/icofon/archive/refs/tags/v0.3.1.tar.gz"
+  sha256 "ab4fac67fb5900d7c1b3062d36f62a567eb365c5cbe2c5420080c8e099e7155b"
   license "MIT"
   head "https://github.com/JWo1F/icofon.git", branch: "master"
-
-  bottle do
-    root_url "https://github.com/JWo1F/homebrew-tap/releases/download/icofon-0.3.0"
-    sha256 cellar: :any_skip_relocation, arm64_tahoe:   "84d96657f13660d6bd99b410e5f3f56bca5caa2fd68ba7f9c55e1e0c924b57c8"
-    sha256 cellar: :any_skip_relocation, arm64_sequoia: "468257aa59acc4cb760717710cec61d3b58c406986c24430d3d390bb201bbb3c"
-    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "1b4d1362fec8f49a3a43670636562984dffc39a0934e6c2117ec736d61745ec1"
-    sha256 cellar: :any_skip_relocation, sequoia:       "7834e9beaababa09cbd71412ab0594e53adcebc112652888eebd5689cd957e66"
-  end
 
   depends_on "rust" => :build
 
