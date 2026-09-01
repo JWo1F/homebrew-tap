@@ -7,11 +7,11 @@ class Icofon < Formula
   head "https://github.com/JWo1F/icofon.git", branch: "master"
 
   bottle do
-    root_url "https://github.com/JWo1F/icofon/releases/download/v0.2.0"
-    sha256 cellar: :any_skip_relocation, arm64_tahoe:   "dc20cd6cd1467042f4ad9af0e16c847417a9390ea2bc545b828275b53a99471b"
-    sha256 cellar: :any_skip_relocation, arm64_sequoia: "13d621d66742de152bac4a008616a15107dbc38e426ac0b8ec04a5ff1febecc0"
-    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "97baa844f82d6e90b9a1cc474d96d858ba18516ee05ff473d0c069bfba92aa3d"
-    sha256 cellar: :any_skip_relocation, sequoia:       "8175c0f11c3c39a64a89f4cc3411b79f98561f18900137cba67768c7a4977e07"
+    root_url "https://github.com/JWo1F/homebrew-tap/releases/download/icofon-0.2.0"
+    sha256 cellar: :any_skip_relocation, arm64_tahoe:   "0ae733ce680f5739f8c12ecc4d99dfe24d9ae664546da363240de1b605edc833"
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "98d244b4d2e85da67b86cee30b6e423e7b574154613bd39815d89090c679ca66"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "c3c6e50c46a6b5de3c147c14c9095edeaa7e10b385946d613195ac8c3e29a1e5"
+    sha256 cellar: :any_skip_relocation, sequoia:       "efc8b745cfd9974ea7eef1f26a8fd0ead360152e617be69dc53c394ba60dfacd"
   end
 
   depends_on "rust" => :build
