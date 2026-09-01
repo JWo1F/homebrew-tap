@@ -1,10 +1,15 @@
 class Icofon < Formula
   desc "Build an icon font (TTF + CSS) from a folder of SVG files"
   homepage "https://github.com/JWo1F/icofon"
-  url "https://github.com/JWo1F/icofon/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "141ee9b685d147309af52118ff319aaff5c7211b5deb5beae0ffe055fa3e663f"
+  url "https://github.com/JWo1F/icofon/archive/refs/tags/v0.2.0.tar.gz"
+  sha256 "d9e45493f17746950a279762e0633235a5b59fef3e7f3713ed43762fd56c12ff"
   license "MIT"
   head "https://github.com/JWo1F/icofon.git", branch: "master"
+
+  bottle do
+    root_url "https://github.com/JWo1F/icofon/releases/download/v0.2.0"
+    sha256 cellar: :any_skip_relocation, arm64_tahoe: "d2c9cdd31e28bfa3ed0311ec6f65357757d1bf1db1db5cd22adac793abe4c349"
+  end
 
   depends_on "rust" => :build
 
