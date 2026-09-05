@@ -6,6 +6,14 @@ class Icofon < Formula
   license "MIT"
   head "https://github.com/JWo1F/icofon.git", branch: "master"
 
+  bottle do
+    root_url "https://github.com/JWo1F/homebrew-tap/releases/download/icofon-0.5.0"
+    sha256 cellar: :any_skip_relocation, arm64_tahoe:   "875154aaeec3564f4a3faa0266bd5a549b2052567ed5eedc395c4d6213f33f30"
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "9014d1dc95f908659ae6d45aed6b5065e59016c2b09c25030e97007b1891daa9"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "cce27acc95c92924c17f59f0ab8c363ad90dac8e938fa8930352f275177b4a25"
+    sha256 cellar: :any_skip_relocation, sequoia:       "f31552194648b936338857bf6a933ab5dbe321f3dc8e4bc979f546d6332e924a"
+  end
+
   depends_on "rust" => :build
 
   def install
