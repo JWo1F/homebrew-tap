@@ -1,7 +1,7 @@
 class Serv < Formula
   desc "Small, fast development server for static sites and single-page apps"
   homepage "https://github.com/JWo1F/serv"
-  version "0.3.0"
+  version "0.4.0"
   license "MIT"
 
   # Prebuilt binaries from serv's own release, so there is no bottle to build
@@ -9,23 +9,23 @@ class Serv < Formula
   # against musl and run on any distribution.
   on_macos do
     on_arm do
-      url "https://github.com/JWo1F/serv/releases/download/v0.3.0/serv-0.3.0-aarch64-apple-darwin.tar.gz"
-      sha256 "6fcf6a0419b9451d1370c6d478495f134a78b90dd75f56da1dd1fb2a964ed6a4"
+      url "https://github.com/JWo1F/serv/releases/download/v0.4.0/serv-0.4.0-aarch64-apple-darwin.tar.gz"
+      sha256 "40ad1ebaaacc637a7e91c33ffae71645d41bb711fb58503116e09f9537c7e38c"
     end
     on_intel do
-      url "https://github.com/JWo1F/serv/releases/download/v0.3.0/serv-0.3.0-x86_64-apple-darwin.tar.gz"
-      sha256 "4730181766ae221c446c47cd7a8b629e0dc5b4a12f1fea4c1465ccece22d975b"
+      url "https://github.com/JWo1F/serv/releases/download/v0.4.0/serv-0.4.0-x86_64-apple-darwin.tar.gz"
+      sha256 "75796aa656ebcaa2f8410fb852b93db33f0e405b0455960a37b33c098ad07222"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/JWo1F/serv/releases/download/v0.3.0/serv-0.3.0-aarch64-unknown-linux-musl.tar.gz"
-      sha256 "433493d2c9c9240cfcecbf97fea440ef6f58d3a5ec181b904775cee0ce922d2c"
+      url "https://github.com/JWo1F/serv/releases/download/v0.4.0/serv-0.4.0-aarch64-unknown-linux-musl.tar.gz"
+      sha256 "4251e73b1d9dcc8b697ace69d4ff88005442d65b9042d99bded27a80d8f76d83"
     end
     on_intel do
-      url "https://github.com/JWo1F/serv/releases/download/v0.3.0/serv-0.3.0-x86_64-unknown-linux-musl.tar.gz"
-      sha256 "c281959cf22652a350defacd90061402d35d82ba4574120f286648ec2fb7682f"
+      url "https://github.com/JWo1F/serv/releases/download/v0.4.0/serv-0.4.0-x86_64-unknown-linux-musl.tar.gz"
+      sha256 "7a7ce99f3697499937564049eabb273d8a9fafc63d1358e28dca5d29420b8cf5"
     end
   end
 
