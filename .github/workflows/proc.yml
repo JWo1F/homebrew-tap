@@ -1,0 +1,155 @@
+# Point Formula/proc.rb at a released version of proc.
+#
+# proc publishes prebuilt binaries for macOS (Apple Silicon and Intel) and
+# Linux (arm64 and x86_64, static musl), so the formula installs one of those
+# rather than compiling from source. There is no Rust toolchain to pull in, no
+# bottle to build and nothing for this tap to host - all this does is rewrite
+# the four url/sha256 pairs and the version, prove the result installs, and
+# commit it.
+#
+# Run it with no input to pick up proc's latest release, or name a version to
+# pin to that one.
+
+name: proc
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "proc release to package, without the leading v. Empty means the latest release."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  FORMULA: proc
+  UPSTREAM: JWo1F/proc
+  TARGETS: aarch64-apple-darwin x86_64-apple-darwin aarch64-unknown-linux-musl x86_64-unknown-linux-musl
+
+jobs:
+  formula:
+    name: Bump the formula
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve the release
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${{ inputs.version }}"
+          if [ -z "$version" ]; then
+            version=$(gh release view --repo "$UPSTREAM" --json tagName -q .tagName)
+            version="${version#v}"
+          fi
+          echo "Packaging $FORMULA $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Hash the release archives
+        run: |
+          set -euo pipefail
+          version="${{ steps.resolve.outputs.version }}"
+          for target in $TARGETS; do
+            file="${FORMULA}-${version}-${target}.tar.gz"
+            curl -fsSL --retry 3 -o "$file" \
+              "https://github.com/${UPSTREAM}/releases/download/v${version}/${file}"
+          done
+          sha256sum "${FORMULA}-${version}"-*.tar.gz | tee sums.txt
+
+      - name: Rewrite the formula
+        run: |
+          set -euo pipefail
+          python3 - "$FORMULA" "${{ steps.resolve.outputs.version }}" "$UPSTREAM" <<'PY'
+          import pathlib, re, sys
+
+          name, version, upstream = sys.argv[1:4]
+          formula = pathlib.Path(f"Formula/{name}.rb")
+          src = formula.read_text()
+
+          sums = {}
+          for line in pathlib.Path("sums.txt").read_text().splitlines():
+              digest, archive = line.split()
+              sums[archive] = digest
+
+          src, n = re.subn(r'^  version "[^"]+"$', f'  version "{version}"', src, flags=re.M)
+          if n != 1:
+              sys.exit(f"expected one version line, found {n}")
+
+          for archive, digest in sorted(sums.items()):
+              target = archive.removeprefix(f"{name}-{version}-").removesuffix(".tar.gz")
+              url = f"https://github.com/{upstream}/releases/download/v{version}/{archive}"
+              pattern = (
+                  r'url "[^"]*-' + re.escape(target) + r'\.tar\.gz"\n(?P<pad>[ ]*)sha256 "[0-9a-f]{64}"'
+              )
+              src, n = re.subn(pattern, f'url "{url}"\n\\g<pad>sha256 "{digest}"', src)
+              if n != 1:
+                  sys.exit(f"expected one url/sha256 pair for {target}, found {n}")
+
+          formula.write_text(src)
+          PY
+          git --no-pager diff -- "Formula/${FORMULA}.rb"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: formula
+          path: Formula/proc.rb
+          if-no-files-found: error
+
+  verify:
+    name: verify · ${{ matrix.os }}
+    needs: formula
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # One runner per slice that can actually run the binary: Apple Silicon,
+        # Intel macOS, x86_64 Linux. There is no hosted arm64 Linux image with
+        # Homebrew, so that archive is covered by the upstream release build.
+        os: [macos-latest, macos-15-intel, ubuntu-latest]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: formula
+
+      - name: Install and test from a scratch tap
+        run: |
+          set -euo pipefail
+          # Homebrew refuses to act on a formula given as a path, so the
+          # candidate has to sit in a tap before it can be installed.
+          [ -d /home/linuxbrew/.linuxbrew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew tap-new local/verify --no-git
+          cp "${FORMULA}.rb" "$(brew --repository local/verify)/Formula/"
+          brew install --formula "local/verify/${FORMULA}"
+          brew test "local/verify/${FORMULA}"
+
+  publish:
+    name: Commit
+    needs: [formula, verify]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: formula
+          path: Formula
+
+      - name: Commit and push
+        run: |
+          set -euo pipefail
+          version="${{ needs.formula.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "Formula/${FORMULA}.rb"
+          if git diff --cached --quiet; then
+            echo "Formula already at $version, nothing to commit."
+          else
+            git commit -m "$FORMULA $version"
+            git push origin HEAD:main
+          fi
